@@ -181,7 +181,7 @@ INSTALL_DIR="/usr/local/bin"
 
 # Always download the latest version from GitHub for consistency
 echo "[*] Downloading menu script..."
-if wget -q https://raw.githubusercontent.com/mkkelati/script11/main/menu.sh -O "${INSTALL_DIR}/menu"; then
+if wget -q https://raw.githubusercontent.com/mkkelati/script11/master/menu.sh -O "${INSTALL_DIR}/menu"; then
   chmod +x "${INSTALL_DIR}/menu"
   echo "[*] Menu system installed successfully"
 else

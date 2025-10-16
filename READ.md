@@ -28,7 +28,7 @@ Advanced SSH user management system with comprehensive monitoring, SSL tunneling
 
 ### ⚡ One-Line Installation
 ```bash
-sudo apt-get update -y && sudo apt-get install -y wget && wget -O install.sh https://raw.githubusercontent.com/mkkelati/script11/main/install.sh && sudo bash install.sh
+sudo apt-get update -y && sudo apt-get install -y wget && wget -O install.sh https://raw.githubusercontent.com/mkkelati/script11/master/install.sh && sudo bash install.sh
 ```
 
 ### 🎯 What Gets Installed
