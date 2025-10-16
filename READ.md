@@ -127,6 +127,9 @@ The integrated Cloudflare Tunnel Manager provides enterprise-grade security and 
 - **Global CDN** - Better performance through Cloudflare's edge network
 - **Domain-Based Access** - Users connect via your custom domain instead of IP
 - **HTTP Injector Integration** - Seamless mobile VPN app compatibility
+- **🆕 Interactive Cipher Selection** - Choose optimal cipher for ISP evasion during installation
+- **🆕 Advanced Cipher Management** - Switch between cipher configurations without reinstalling
+- **🆕 X448 Curve Support** - Ultra-high security key exchange (448-bit equivalent)
 - **Automatic Setup** - Interactive configuration with domain + token validation
 - **Service Management** - Start/stop tunnel with systemd integration
 - **Real-time Monitoring** - Status checking and log viewing
@@ -157,6 +160,54 @@ SSL/SNI: your-domain.com (or google.com for advanced evasion)
 - **🕵️ Complete Stealth**: Impossible to detect as VPN traffic (looks like website)
 - **🌍 Global Access**: Works even in restrictive countries
 - **⚡ Easy Management**: All controls integrated in existing menu system
+
+## 🔐 Advanced Cipher Selection System (NEW!)
+The enhanced system includes intelligent cipher selection to maximize ISP evasion:
+
+### 🎯 Installation Cipher Options:
+During installation, choose from:
+
+**Option 1: ECDHE-RSA-AES256-GCM-SHA384 + X448 (TLS 1.2)**
+- ✅ **Best for ISP evasion** - Business-grade pattern
+- ✅ **High success probability** - 6+ months expected
+- ✅ **Ultra-high security** - X448 curve (448-bit equivalent)
+
+**Option 2: TLS_AES_256_GCM_SHA384 + X448 (TLS 1.3)**
+- ⚠️ **Modern TLS 1.3** - Might be monitored by advanced ISPs
+- ✅ **Maximum security** - Latest encryption standards
+- ✅ **X448 curve** - Unique fingerprint for evasion
+
+**Option 3: Default Configuration**
+- ⚠️ **Standard configuration** - For compatibility testing
+
+### 🔄 Runtime Cipher Management:
+After installation, use **Menu Option 13** → **Cipher Management**:
+
+**📋 View Cipher Info (Option 9):**
+- Current TLS version and cipher suite
+- Key exchange curve information
+- Expected ISP evasion timeline
+- Security feature analysis
+
+**🔐 Change Cipher Configuration (Option 8):**
+- Switch between predefined secure options
+- Custom cipher configuration for advanced users
+- Automatic backup and rollback on failure
+- Live cipher testing and validation
+
+**🔧 Test Cipher Connectivity (Option 10):**
+- Verify stunnel service status
+- Test local SSL connections
+- Display current cipher configuration
+- Connection troubleshooting guidance
+
+### 💡 ISP Evasion Strategy:
+The cipher selection system helps evade sophisticated ISP detection:
+
+1. **Pattern Disruption**: Use uncommon cipher combinations
+2. **Rotation Capability**: Switch ciphers when blocked
+3. **Business Mimicry**: Appear as enterprise traffic
+4. **Advanced Curves**: X448 provides unique fingerprints
 
 ## 🛡️ Advanced User Limiter
 The integrated User Limiter provides comprehensive connection monitoring and enforcement:

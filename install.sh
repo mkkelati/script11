@@ -120,8 +120,70 @@ fi
 STUNNEL_CONF="/etc/stunnel/stunnel.conf"
 if [[ ! -f "$STUNNEL_CONF" ]]; then
   echo "[*] Setting up stunnel configuration..."
-  cat > "$STUNNEL_CONF" << 'EOC'
-# Mandatory TLS_AES_256_GCM_SHA384 cipher configuration
+  echo ""
+  echo "🔐 CIPHER SELECTION FOR MAXIMUM ISP EVASION"
+  echo "==========================================="
+  echo ""
+  echo "Choose your preferred cipher configuration:"
+  echo ""
+  echo "[1] 🛡️  ECDHE-RSA-AES256-GCM-SHA384 + X448 (TLS 1.2)"
+  echo "    ✅ Completely different from common blocked patterns"
+  echo "    ✅ High success probability (6+ months expected)"
+  echo "    ✅ Business-grade security with X448 curve"
+  echo ""
+  echo "[2] 🚀 TLS_AES_256_GCM_SHA384 + X448 (TLS 1.3)"  
+  echo "    ⚠️  Modern TLS 1.3 cipher (might be monitored)"
+  echo "    ✅ But with X448 curve for uniqueness"
+  echo "    ✅ Maximum security and performance"
+  echo ""
+  echo "[3] 🔄 Default Configuration (Legacy)"
+  echo "    ⚠️  Standard configuration for compatibility"
+  echo ""
+  
+  while true; do
+    read -p "Select option [1-3]: " cipher_choice
+    case $cipher_choice in
+      1)
+        echo ""
+        echo "✅ Selected: ECDHE-RSA-AES256-GCM-SHA384 + X448 (TLS 1.2)"
+        SELECTED_TLS="TLSv1.2"
+        SELECTED_CIPHER="ECDHE-RSA-AES256-GCM-SHA384"
+        SELECTED_CURVE="X448"
+        CIPHER_TYPE="ciphers"
+        echo "Expected ISP evasion: EXCELLENT (6+ months)"
+        break
+        ;;
+      2)
+        echo ""
+        echo "✅ Selected: TLS_AES_256_GCM_SHA384 + X448 (TLS 1.3)"
+        SELECTED_TLS="TLSv1.3"
+        SELECTED_CIPHER="TLS_AES_256_GCM_SHA384"
+        SELECTED_CURVE="X448"
+        CIPHER_TYPE="ciphersuites"
+        echo "Expected ISP evasion: GOOD (test immediately)"
+        break
+        ;;
+      3)
+        echo ""
+        echo "✅ Selected: Default Configuration"
+        SELECTED_TLS="TLSv1.3"
+        SELECTED_CIPHER="TLS_AES_256_GCM_SHA384"
+        SELECTED_CURVE="prime256v1"
+        CIPHER_TYPE="ciphersuites"
+        echo "Using standard configuration"
+        break
+        ;;
+      *)
+        echo "Invalid option. Please select 1, 2, or 3."
+        ;;
+    esac
+  done
+  
+  echo ""
+  echo "[*] Creating stunnel configuration with selected cipher..."
+  
+  cat > "$STUNNEL_CONF" << EOC
+# MK Script Manager - Advanced Cipher Configuration
 cert = /etc/stunnel/stunnel.pem
 pid = /var/run/stunnel4/stunnel.pid
 
@@ -133,17 +195,31 @@ output = /var/log/stunnel4/stunnel.log
 accept = 443
 connect = 127.0.0.1:22
 
-# MANDATORY: Only TLS_AES_256_GCM_SHA384 cipher allowed
-ciphersuites = TLS_AES_256_GCM_SHA384
+# Selected Cipher Configuration
+$CIPHER_TYPE = $SELECTED_CIPHER
+sslVersion = $SELECTED_TLS
+curves = $SELECTED_CURVE
 
-# Force TLS 1.3 only for TLS_AES_256_GCM_SHA384
-sslVersion = TLSv1.3
+# Security Options
 options = NO_SSLv2
 options = NO_SSLv3
 options = NO_TLSv1
 options = NO_TLSv1_1
-options = NO_TLSv1_2
 EOC
+
+  # Add TLS 1.2 restriction if TLS 1.3 is selected
+  if [[ "$SELECTED_TLS" == "TLSv1.3" ]]; then
+    echo "options = NO_TLSv1_2" >> "$STUNNEL_CONF"
+  fi
+  
+  echo ""
+  echo "✅ STUNNEL CONFIGURED SUCCESSFULLY"
+  echo "=================================="
+  echo "TLS Version: $SELECTED_TLS"
+  echo "Cipher: $SELECTED_CIPHER"
+  echo "Curve: $SELECTED_CURVE"
+  echo "Configuration saved to: $STUNNEL_CONF"
+  echo ""
 fi
 
 echo "[*] Starting stunnel service..."

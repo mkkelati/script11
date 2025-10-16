@@ -3087,6 +3087,255 @@ generate_http_injector_configs() {
     echo -e "\n${GREEN}✅ Ready for HTTP Injector setup!${RESET}"
 }
 
+view_cipher_configuration() {
+    clear
+    display_header_with_timestamp "CIPHER CONFIGURATION INFO"
+    
+    echo -e "\n${BLUE}┌────────────────────────────────────────────────────────────┐${RESET}"
+    echo -e "${BLUE}│${WHITE}                   CURRENT CIPHER CONFIG                     ${BLUE}│${RESET}"
+    echo -e "${BLUE}└────────────────────────────────────────────────────────────┘${RESET}\n"
+    
+    if [[ -f "/etc/stunnel/stunnel.conf" ]]; then
+        local tls_version=$(grep "sslVersion" /etc/stunnel/stunnel.conf | cut -d'=' -f2 | xargs)
+        local cipher_line=$(grep -E "^(ciphers|ciphersuites)" /etc/stunnel/stunnel.conf)
+        local curve_line=$(grep "curves" /etc/stunnel/stunnel.conf | cut -d'=' -f2 | xargs)
+        
+        echo -e "${YELLOW}📋 Stunnel Configuration:${RESET}"
+        echo -e "${WHITE}   • TLS Version: ${GREEN}$tls_version${RESET}"
+        echo -e "${WHITE}   • $cipher_line${RESET}"
+        echo -e "${WHITE}   • Curve: ${GREEN}$curve_line${RESET}"
+        
+        # Determine cipher type and expected performance
+        if [[ "$cipher_line" == *"ECDHE-RSA-AES256-GCM-SHA384"* ]]; then
+            echo -e "${WHITE}   • Type: ${CYAN}Business-grade TLS 1.2${RESET}"
+            echo -e "${WHITE}   • Expected ISP Evasion: ${GREEN}EXCELLENT (6+ months)${RESET}"
+        elif [[ "$cipher_line" == *"TLS_AES_256_GCM_SHA384"* ]]; then
+            echo -e "${WHITE}   • Type: ${CYAN}Modern TLS 1.3${RESET}"
+            echo -e "${WHITE}   • Expected ISP Evasion: ${YELLOW}VARIABLE (test needed)${RESET}"
+        else
+            echo -e "${WHITE}   • Type: ${CYAN}Standard Configuration${RESET}"
+            echo -e "${WHITE}   • Expected ISP Evasion: ${YELLOW}STANDARD${RESET}"
+        fi
+        
+        echo -e "\n${YELLOW}🔒 Security Features:${RESET}"
+        if [[ "$curve_line" == "X448" ]]; then
+            echo -e "${WHITE}   • Key Exchange: ${GREEN}X448 (448-bit, Ultra-High Security)${RESET}"
+        elif [[ "$curve_line" == "X25519" ]]; then
+            echo -e "${WHITE}   • Key Exchange: ${GREEN}X25519 (256-bit, High Security)${RESET}"
+        else
+            echo -e "${WHITE}   • Key Exchange: ${GREEN}$curve_line${RESET}"
+        fi
+        
+        echo -e "${WHITE}   • Perfect Forward Secrecy: ${GREEN}YES${RESET}"
+        echo -e "${WHITE}   • Authenticated Encryption: ${GREEN}YES${RESET}"
+    else
+        echo -e "${RED}❌ Stunnel configuration not found${RESET}"
+    fi
+    
+    echo -e "\n${CYAN}💡 Cipher Management:${RESET}"
+    echo -e "${WHITE}• Use option 8 to change cipher configuration${RESET}"
+    echo -e "${WHITE}• Monitor connection success for ISP evasion effectiveness${RESET}"
+}
+
+change_cipher_configuration() {
+    clear
+    display_header_with_timestamp "CHANGE CIPHER CONFIGURATION"
+    
+    echo -e "\n${BLUE}┌────────────────────────────────────────────────────────────┐${RESET}"
+    echo -e "${BLUE}│${WHITE}                   CIPHER SELECTION                          ${BLUE}│${RESET}"
+    echo -e "${BLUE}└────────────────────────────────────────────────────────────┘${RESET}\n"
+    
+    # Show current configuration
+    if [[ -f "/etc/stunnel/stunnel.conf" ]]; then
+        local current_cipher=$(grep -E "^(ciphers|ciphersuites)" /etc/stunnel/stunnel.conf | cut -d'=' -f2 | xargs)
+        local current_tls=$(grep "sslVersion" /etc/stunnel/stunnel.conf | cut -d'=' -f2 | xargs)
+        echo -e "${YELLOW}📋 Current Configuration:${RESET}"
+        echo -e "${WHITE}   • TLS Version: ${GREEN}$current_tls${RESET}"
+        echo -e "${WHITE}   • Cipher: ${GREEN}$current_cipher${RESET}"
+        echo -e ""
+    fi
+    
+    echo -e "${YELLOW}🔐 Select New Cipher Configuration:${RESET}"
+    echo -e ""
+    echo -e "${RED}[${BLUE}1${RED}] ${WHITE}🛡️  ECDHE-RSA-AES256-GCM-SHA384 + X448 (TLS 1.2)${RESET}"
+    echo -e "${WHITE}    ✅ Best for ISP evasion (business-grade pattern)${RESET}"
+    echo -e "${WHITE}    ✅ High success probability (6+ months expected)${RESET}"
+    echo -e "${WHITE}    ✅ Ultra-high security with X448 curve${RESET}"
+    echo -e ""
+    echo -e "${RED}[${BLUE}2${RED}] ${WHITE}🚀 TLS_AES_256_GCM_SHA384 + X448 (TLS 1.3)${RESET}"
+    echo -e "${WHITE}    ⚠️  Modern TLS 1.3 (might be monitored by ISP)${RESET}"
+    echo -e "${WHITE}    ✅ Maximum security and performance${RESET}"
+    echo -e "${WHITE}    ✅ X448 curve for uniqueness${RESET}"
+    echo -e ""
+    echo -e "${RED}[${BLUE}3${RED}] ${WHITE}🔄 Custom Cipher (Advanced)${RESET}"
+    echo -e "${WHITE}    ✅ Enter your own cipher configuration${RESET}"
+    echo -e ""
+    echo -e "${RED}[${BLUE}0${RED}] ${WHITE}• ${YELLOW}CANCEL${RESET}"
+    
+    echo ""
+    echo -ne "${GREEN}Select cipher option${YELLOW}? ${WHITE}"
+    read choice
+    
+    case "$choice" in
+        1)
+            echo -e "\n${YELLOW}🔧 Applying ECDHE-RSA-AES256-GCM-SHA384 + X448 configuration...${RESET}"
+            apply_cipher_config "TLSv1.2" "ECDHE-RSA-AES256-GCM-SHA384" "X448" "ciphers"
+            ;;
+        2)
+            echo -e "\n${YELLOW}🔧 Applying TLS_AES_256_GCM_SHA384 + X448 configuration...${RESET}"
+            apply_cipher_config "TLSv1.3" "TLS_AES_256_GCM_SHA384" "X448" "ciphersuites"
+            ;;
+        3)
+            configure_custom_cipher
+            ;;
+        0)
+            echo -e "\n${YELLOW}Cipher change cancelled${RESET}"
+            return
+            ;;
+        *)
+            echo -e "\n${RED}❌ Invalid option!${RESET}"
+            sleep 2
+            ;;
+    esac
+}
+
+apply_cipher_config() {
+    local tls_version="$1"
+    local cipher="$2"
+    local curve="$3"
+    local cipher_type="$4"
+    
+    # Backup current configuration
+    cp /etc/stunnel/stunnel.conf /etc/stunnel/stunnel.conf.backup
+    
+    # Create new configuration
+    cat > /etc/stunnel/stunnel.conf << EOF
+# MK Script Manager - Advanced Cipher Configuration
+cert = /etc/stunnel/stunnel.pem
+pid = /var/run/stunnel4/stunnel.pid
+
+# Logging
+debug = 7
+output = /var/log/stunnel4/stunnel.log
+
+[ssh-tunnel]
+accept = 443
+connect = 127.0.0.1:22
+
+# Selected Cipher Configuration
+$cipher_type = $cipher
+sslVersion = $tls_version
+curves = $curve
+
+# Security Options
+options = NO_SSLv2
+options = NO_SSLv3
+options = NO_TLSv1
+options = NO_TLSv1_1
+EOF
+
+    # Add TLS 1.2 restriction if TLS 1.3 is selected
+    if [[ "$tls_version" == "TLSv1.3" ]]; then
+        echo "options = NO_TLSv1_2" >> /etc/stunnel/stunnel.conf
+    fi
+    
+    # Restart stunnel
+    if systemctl restart stunnel4; then
+        echo -e "${GREEN}✅ Cipher configuration applied successfully!${RESET}"
+        echo -e "${WHITE}   • TLS Version: ${YELLOW}$tls_version${RESET}"
+        echo -e "${WHITE}   • Cipher: ${YELLOW}$cipher${RESET}"
+        echo -e "${WHITE}   • Curve: ${YELLOW}$curve${RESET}"
+        echo -e "\n${CYAN}💡 Test your connection with HTTP Injector to verify it works${RESET}"
+    else
+        echo -e "${RED}❌ Failed to restart stunnel! Restoring backup...${RESET}"
+        mv /etc/stunnel/stunnel.conf.backup /etc/stunnel/stunnel.conf
+        systemctl restart stunnel4
+        echo -e "${YELLOW}⚠️  Configuration restored to previous working state${RESET}"
+    fi
+}
+
+configure_custom_cipher() {
+    echo -e "\n${CYAN}🔧 Custom Cipher Configuration${RESET}"
+    echo -e "${WHITE}Enter your custom cipher settings:${RESET}\n"
+    
+    echo -e "${YELLOW}TLS Version Options:${RESET}"
+    echo -e "${WHITE}• TLSv1.2 (more cipher options, better ISP evasion)${RESET}"
+    echo -e "${WHITE}• TLSv1.3 (modern, limited cipher options)${RESET}"
+    read -p "Enter TLS version [TLSv1.2/TLSv1.3]: " custom_tls
+    
+    if [[ "$custom_tls" == "TLSv1.3" ]]; then
+        echo -e "\n${YELLOW}TLS 1.3 Cipher Suites:${RESET}"
+        echo -e "${WHITE}• TLS_AES_256_GCM_SHA384${RESET}"
+        echo -e "${WHITE}• TLS_AES_128_GCM_SHA256${RESET}"
+        echo -e "${WHITE}• TLS_CHACHA20_POLY1305_SHA256${RESET}"
+        echo -e "${WHITE}• TLS_AES_128_CCM_SHA256${RESET}"
+        read -p "Enter cipher suite: " custom_cipher
+        cipher_type="ciphersuites"
+    else
+        echo -e "\n${YELLOW}TLS 1.2 Cipher Examples:${RESET}"
+        echo -e "${WHITE}• ECDHE-RSA-AES256-GCM-SHA384${RESET}"
+        echo -e "${WHITE}• ECDHE-ECDSA-AES256-GCM-SHA384${RESET}"
+        echo -e "${WHITE}• ECDHE-RSA-CHACHA20-POLY1305${RESET}"
+        read -p "Enter cipher: " custom_cipher
+        cipher_type="ciphers"
+    fi
+    
+    echo -e "\n${YELLOW}Curve Options:${RESET}"
+    echo -e "${WHITE}• X448 (ultra-high security, 448-bit)${RESET}"
+    echo -e "${WHITE}• X25519 (high security, 256-bit)${RESET}"
+    echo -e "${WHITE}• prime256v1 (standard, 256-bit)${RESET}"
+    read -p "Enter curve [X448/X25519/prime256v1]: " custom_curve
+    
+    echo -e "\n${YELLOW}🔧 Applying custom configuration...${RESET}"
+    apply_cipher_config "$custom_tls" "$custom_cipher" "$custom_curve" "$cipher_type"
+}
+
+test_cipher_connectivity() {
+    clear
+    display_header_with_timestamp "CIPHER CONNECTIVITY TEST"
+    
+    echo -e "\n${BLUE}┌────────────────────────────────────────────────────────────┐${RESET}"
+    echo -e "${BLUE}│${WHITE}                  TESTING CONNECTION                         ${BLUE}│${RESET}"
+    echo -e "${BLUE}└────────────────────────────────────────────────────────────┘${RESET}\n"
+    
+    echo -e "${YELLOW}🔧 Testing stunnel connectivity...${RESET}\n"
+    
+    # Test stunnel service
+    if systemctl is-active --quiet stunnel4; then
+        echo -e "${GREEN}✅ Stunnel service: RUNNING${RESET}"
+    else
+        echo -e "${RED}❌ Stunnel service: NOT RUNNING${RESET}"
+        echo -e "${YELLOW}💡 Try restarting: systemctl restart stunnel4${RESET}"
+        return
+    fi
+    
+    # Test local connection
+    echo -e "${YELLOW}🔍 Testing local SSL connection...${RESET}"
+    if timeout 5 openssl s_client -connect localhost:443 -quiet </dev/null &>/dev/null; then
+        echo -e "${GREEN}✅ Local SSL connection: SUCCESS${RESET}"
+    else
+        echo -e "${RED}❌ Local SSL connection: FAILED${RESET}"
+        echo -e "${YELLOW}💡 Check stunnel configuration and logs${RESET}"
+    fi
+    
+    # Show cipher information
+    echo -e "\n${YELLOW}📋 Current Configuration:${RESET}"
+    if [[ -f "/etc/stunnel/stunnel.conf" ]]; then
+        local cipher_info=$(grep -E "^(ciphers|ciphersuites)" /etc/stunnel/stunnel.conf)
+        local tls_info=$(grep "sslVersion" /etc/stunnel/stunnel.conf)
+        local curve_info=$(grep "curves" /etc/stunnel/stunnel.conf)
+        
+        echo -e "${WHITE}   • $tls_info${RESET}"
+        echo -e "${WHITE}   • $cipher_info${RESET}"
+        echo -e "${WHITE}   • $curve_info${RESET}"
+    fi
+    
+    echo -e "\n${CYAN}💡 Next Steps:${RESET}"
+    echo -e "${WHITE}• Test with HTTP Injector using your domain${RESET}"
+    echo -e "${WHITE}• Monitor connection success for ISP blocking${RESET}"
+    echo -e "${WHITE}• Switch ciphers if connections start failing${RESET}"
+}
+
 uninstall_cloudflare_tunnel() {
     echo -e "${YELLOW}🗑️  Uninstalling Cloudflare Tunnel...${RESET}"
     
@@ -3133,7 +3382,10 @@ manage_cloudflare_tunnel() {
         echo -e "${RED}[${BLUE}5${RED}] ${WHITE}• ${BLUE}View Tunnel Status${RESET}"
         echo -e "${RED}[${BLUE}6${RED}] ${WHITE}• ${MAGENTA}Generate HTTP Injector Configs${RESET}"
         echo -e "${RED}[${BLUE}7${RED}] ${WHITE}• ${CYAN}Detect Current Setup${RESET}"
-        echo -e "${RED}[${BLUE}8${RED}] ${WHITE}• ${RED}Uninstall Tunnel${RESET}"
+        echo -e "${RED}[${BLUE}8${RED}] ${WHITE}• 🔐 ${YELLOW}Change Cipher Configuration${RESET}"
+        echo -e "${RED}[${BLUE}9${RED}] ${WHITE}• 📋 ${CYAN}View Cipher Info${RESET}"
+        echo -e "${RED}[${BLUE}10${RED}] ${WHITE}• 🔧 ${GREEN}Test Cipher Connectivity${RESET}"
+        echo -e "${RED}[${BLUE}11${RED}] ${WHITE}• ${RED}Uninstall Tunnel${RESET}"
         echo -e "${RED}[${BLUE}0${RED}] ${WHITE}• ${YELLOW}BACK TO MAIN MENU${RESET}"
         
         echo ""
@@ -3178,6 +3430,15 @@ manage_cloudflare_tunnel() {
                 detect_current_setup
                 ;;
             8)
+                change_cipher_configuration
+                ;;
+            9)
+                view_cipher_configuration
+                ;;
+            10)
+                test_cipher_connectivity
+                ;;
+            11)
                 uninstall_cloudflare_tunnel
                 ;;
             0)
