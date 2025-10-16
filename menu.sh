@@ -2952,7 +2952,7 @@ configure_cloudflare_tunnel() {
 DOMAIN_NAME="$domain_name"
 TUNNEL_TOKEN="$tunnel_token"
 CREATED_DATE="$(date)"
-LOCAL_SERVICE="https://localhost:443"
+LOCAL_SERVICE="http://localhost:22"
 EOF
     
     # Set permissions
@@ -2963,7 +2963,7 @@ EOF
     
     echo -e "${GREEN}✅ Cloudflare Tunnel configured successfully!${RESET}"
     echo -e "${WHITE}   • Domain: ${YELLOW}$domain_name${RESET}"
-    echo -e "${WHITE}   • Service: ${YELLOW}https://localhost:443${RESET}"
+    echo -e "${WHITE}   • Service: ${YELLOW}http://localhost:22${RESET}"
     
     return 0
 }
@@ -3047,8 +3047,8 @@ check_cloudflare_status() {
     
     # Show connection info if active
     if systemctl is-active --quiet cloudflared; then
-        echo -e "${WHITE}Local Service: ${YELLOW}https://localhost:443${RESET}"
-        echo -e "${WHITE}Stunnel Integration: ${GREEN}✅ Connected${RESET}"
+        echo -e "${WHITE}Local Service: ${YELLOW}http://localhost:22${RESET}"
+        echo -e "${WHITE}SSH Integration: ${GREEN}✅ Connected${RESET}"
     fi
 }
 

@@ -133,7 +133,7 @@ The integrated Cloudflare Tunnel Manager provides enterprise-grade security and 
 
 ### How It Works:
 ```
-[HTTP Injector] → [your-domain.com:443] → [Cloudflare] → [Your Server:443] → [SSH Tunnel]
+[HTTP Injector] → [your-domain.com:443] → [Cloudflare] → [Your Server:22] → [SSH Service]
 ```
 
 ### Setup Process:
