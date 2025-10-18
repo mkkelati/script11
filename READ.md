@@ -164,21 +164,15 @@ SSL/SNI: your-domain.com (or google.com for advanced evasion)
 ## 🔐 Advanced Cipher Selection System (NEW!)
 The enhanced system includes intelligent cipher selection to maximize ISP evasion:
 
-### 🎯 Installation Cipher Options:
-During installation, choose from:
+### 🎯 Automatic Configuration:
+The system automatically installs with the optimal cipher configuration:
 
-**Option 1: ECDHE-RSA-AES256-GCM-SHA384 + X448 (TLS 1.2)**
-- ✅ **Best for ISP evasion** - Business-grade pattern
-- ✅ **High success probability** - 6+ months expected
-- ✅ **Ultra-high security** - X448 curve (448-bit equivalent)
-
-**Option 2: TLS_AES_256_GCM_SHA384 + X448 (TLS 1.3)**
-- ⚠️ **Modern TLS 1.3** - Might be monitored by advanced ISPs
-- ✅ **Maximum security** - Latest encryption standards
-- ✅ **X448 curve** - Unique fingerprint for evasion
-
-**Option 3: Default Configuration**
-- ⚠️ **Standard configuration** - For compatibility testing
+**TLS_AES_256_GCM_SHA384 + X448 (TLS 1.3)**
+- ✅ **Maximum Security** - Latest TLS 1.3 encryption standards  
+- ✅ **Ultra-High Security** - X448 curve (448-bit equivalent security)
+- ✅ **Advanced Performance** - Modern AEAD encryption with GCM
+- ✅ **ISP Evasion** - X448 provides unique fingerprint
+- ✅ **Perfect Forward Secrecy** - Mandatory in TLS 1.3
 
 ### 🔄 Runtime Cipher Management:
 After installation, use **Menu Option 13** → **Cipher Management**:
@@ -202,12 +196,12 @@ After installation, use **Menu Option 13** → **Cipher Management**:
 - Connection troubleshooting guidance
 
 ### 💡 ISP Evasion Strategy:
-The cipher selection system helps evade sophisticated ISP detection:
+The automatic TLS 1.3 + X448 configuration provides optimal evasion:
 
-1. **Pattern Disruption**: Use uncommon cipher combinations
-2. **Rotation Capability**: Switch ciphers when blocked
-3. **Business Mimicry**: Appear as enterprise traffic
-4. **Advanced Curves**: X448 provides unique fingerprints
+1. **Modern Encryption**: TLS 1.3 with latest security standards
+2. **Unique Fingerprint**: X448 curve creates uncommon signature  
+3. **Advanced Security**: 448-bit equivalent key exchange
+4. **Runtime Flexibility**: Switch ciphers via menu if needed
 
 ## 🛡️ Advanced User Limiter
 The integrated User Limiter provides comprehensive connection monitoring and enforcement:
