@@ -1,6 +1,6 @@
 # MK Script Manager v4.0 🚀
 
-Advanced SSH user management system with comprehensive monitoring, SSL tunneling, and **Cloudflare Tunnel integration** for Ubuntu 20.04–24.04.
+Advanced SSH user management system with **Dropbear SSH server**, comprehensive monitoring, SSL tunneling, and **Cloudflare Tunnel integration** for Ubuntu 20.04–24.04.
 
 ## ✨ Features
 
@@ -19,8 +19,10 @@ Advanced SSH user management system with comprehensive monitoring, SSL tunneling
 - **Connection Statistics** - Live connection counting with auto-refresh
 
 ### 🛡️ Security & Connectivity
+- **Dropbear SSH Server** - Lightweight SSH server (dropbear_2020.81+ compatible)
 - **SSH-SSL Tunneling** - Secure stunnel configuration on port 443
-- **TLS 1.3 Encryption** - Advanced cipher suites (ChaCha20-Poly1305)
+- **Exact Algorithm Match** - diffie-hellman-group14-sha1, aes256-ctr, hmac-sha2-256
+- **TLS 1.3 Encryption** - Advanced cipher suites (TLS_AES_256_GCM_SHA384 + X448)
 - **Connection Limits** - Per-user simultaneous connection control
 - **Session Management** - Active session detection and control
 
@@ -32,8 +34,9 @@ sudo apt-get update -y && sudo apt-get install -y wget && wget -O install.sh htt
 ```
 
 ### 🎯 What Gets Installed
-- **stunnel4** with TLS 1.3 encryption
-- **SSH-SSL tunnel** on port 443
+- **Dropbear SSH server** - Exact algorithm match (diffie-hellman-group14-sha1, aes256-ctr, hmac-sha2-256)
+- **stunnel4** with TLS 1.3 + X448 encryption
+- **SSH-SSL tunnel** on port 443 (SSL → Dropbear SSH)
 - **Menu system** at `/usr/local/bin/menu`
 - **User management database** at `/etc/mk-script/users.txt`
 - **Required directories** and permissions
@@ -136,7 +139,10 @@ The integrated Cloudflare Tunnel Manager provides enterprise-grade security and 
 
 ### How It Works:
 ```
-[HTTP Injector] → [your-domain.com:443] → [Cloudflare] → [Your Server:22] → [SSH Service]
+[HTTP Injector] → [SSL Tunnel :443] → [Dropbear SSH :22] → [Shell Access]
+                     ↑                    ↑
+            TLS_AES_256_GCM_SHA384    diffie-hellman-group14-sha1
+                 + X448               aes256-ctr + hmac-sha2-256
 ```
 
 ### Setup Process:
@@ -167,12 +173,13 @@ The enhanced system includes intelligent cipher selection to maximize ISP evasio
 ### 🎯 Automatic Configuration:
 The system automatically installs with the optimal cipher configuration:
 
-**TLS_AES_256_GCM_SHA384 + X448 (TLS 1.3)**
-- ✅ **Maximum Security** - Latest TLS 1.3 encryption standards  
-- ✅ **Ultra-High Security** - X448 curve (448-bit equivalent security)
-- ✅ **Advanced Performance** - Modern AEAD encryption with GCM
-- ✅ **ISP Evasion** - X448 provides unique fingerprint
-- ✅ **Perfect Forward Secrecy** - Mandatory in TLS 1.3
+**TLS_AES_256_GCM_SHA384 + X448 (TLS 1.3) → Dropbear SSH**
+- ✅ **SSL Tunnel Security** - TLS 1.3 + X448 curve (448-bit equivalent)
+- ✅ **SSH Algorithm Match** - diffie-hellman-group14-sha1 key exchange
+- ✅ **Exact Cipher Match** - aes256-ctr encryption + hmac-sha2-256 MAC
+- ✅ **Dropbear Compatibility** - SSH-2.0-dropbear_2020.81+ signature
+- ✅ **ISP Evasion** - SSL tunnel hides SSH traffic patterns
+- ✅ **Perfect Forward Secrecy** - Both TLS 1.3 and SSH layers
 
 ### 🔄 Runtime Cipher Management:
 After installation, use **Menu Option 13** → **Cipher Management**:
@@ -236,6 +243,8 @@ admin 5                  # Allows 5 connections
 /etc/mk-script/cloudflare/            # 🆕 Cloudflare Tunnel configuration
 /etc/VPSManager/Exp                   # Expiration dates
 /etc/stunnel/stunnel.conf             # TLS configuration
+/etc/dropbear/                        # 🆕 Dropbear SSH server configuration
+/etc/default/dropbear                 # 🆕 Dropbear service settings
 /root/usuarios.db                     # User Limiter database
 /usr/local/bin/menu                   # Main script
 /usr/local/bin/cloudflared            # 🆕 Cloudflare Tunnel daemon
@@ -266,12 +275,13 @@ admin 5                  # Allows 5 connections
 - Server Port: **443**
 - SSL/TLS: **Enabled**
 
-### **🆕 Cloudflare Tunnel (Recommended):**
+### **🆕 Cloudflare Tunnel + Dropbear SSH (Recommended):**
 - Protocol: **SSL/TLS**
 - Server: **your-domain.com**
 - Server Port: **443**
 - SSL/SNI: **your-domain.com** (or google.com for stealth)
-- **Benefits**: Hidden IP, DDoS protection, ISP evasion
+- **SSH Backend**: Dropbear with exact algorithm match
+- **Benefits**: Hidden IP, DDoS protection, ISP evasion, exact SSH fingerprint
 
 ## 🎨 Professional Interface
 

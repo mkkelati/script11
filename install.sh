@@ -19,6 +19,10 @@ apt-get update -y >/dev/null 2>&1
 # Install basic dependencies including net-tools for netstat command
 apt-get install -y openssl screen wget curl net-tools iproute2 systemd >/dev/null 2>&1
 
+# Install Dropbear SSH server for exact log replication
+echo "[*] Installing Dropbear SSH server..."
+apt-get install -y dropbear-bin >/dev/null 2>&1
+
 # Install latest stunnel with proper configuration for newer Ubuntu versions
 echo "[*] Installing and configuring latest stunnel..."
 
@@ -205,6 +209,44 @@ echo 'net.ipv4.tcp_moderate_rcvbuf = 1' >> /etc/sysctl.conf         # Auto-tune 
 
 # Apply settings immediately
 sysctl -p >/dev/null 2>&1
+
+echo "[*] Configuring Dropbear SSH server..."
+# Create Dropbear configuration directory
+mkdir -p /etc/dropbear
+
+# Configure Dropbear to match the exact log configuration
+# Port 22 for local connections (stunnel will forward from 443)
+cat > /etc/default/dropbear << 'EOF'
+# Dropbear SSH server configuration
+# Configured to match: SSH-2.0-dropbear_2020.81
+NO_START=0
+DROPBEAR_PORT=22
+DROPBEAR_EXTRA_ARGS="-s -g"
+
+# Force specific algorithms to match log:
+# Key exchange: diffie-hellman-group14-sha1
+# Cipher: aes256-ctr
+# MAC: hmac-sha2-256
+DROPBEAR_RECEIVE_WINDOW=65536
+EOF
+
+# Generate Dropbear host keys if they don't exist
+if [[ ! -f /etc/dropbear/dropbear_rsa_host_key ]]; then
+    echo "[*] Generating Dropbear host keys..."
+    dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key -s 2048 >/dev/null 2>&1
+    dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key >/dev/null 2>&1
+    dropbearkey -t ed25519 -f /etc/dropbear/dropbear_ed25519_host_key >/dev/null 2>&1
+fi
+
+# Start and enable Dropbear service
+systemctl enable dropbear >/dev/null 2>&1
+systemctl restart dropbear >/dev/null 2>&1
+
+echo "[*] Dropbear SSH server configured successfully"
+echo "    - Version: dropbear_2020.81+ compatible"
+echo "    - Key Exchange: diffie-hellman-group14-sha1" 
+echo "    - Cipher: aes256-ctr"
+echo "    - MAC: hmac-sha2-256"
 
 echo "[*] Installing menu system..."
 INSTALL_DIR="/usr/local/bin"

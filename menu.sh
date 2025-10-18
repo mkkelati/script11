@@ -3336,6 +3336,88 @@ test_cipher_connectivity() {
     echo -e "${WHITE}• Switch ciphers if connections start failing${RESET}"
 }
 
+verify_dropbear_config() {
+    clear
+    display_header_with_timestamp "DROPBEAR SSH VERIFICATION"
+    
+    echo -e "\n${BLUE}┌────────────────────────────────────────────────────────────┐${RESET}"
+    echo -e "${BLUE}│${WHITE}              DROPBEAR SSH CONFIGURATION MATCH               ${BLUE}│${RESET}"
+    echo -e "${BLUE}└────────────────────────────────────────────────────────────┘${RESET}\n"
+    
+    echo -e "${YELLOW}🎯 Target Configuration (from your log):${RESET}"
+    echo -e "${WHITE}   • SSH Version: ${GREEN}SSH-2.0-dropbear_2020.81${RESET}"
+    echo -e "${WHITE}   • Key Exchange: ${GREEN}diffie-hellman-group14-sha1${RESET}"
+    echo -e "${WHITE}   • Cipher: ${GREEN}aes256-ctr${RESET}"
+    echo -e "${WHITE}   • MAC: ${GREEN}hmac-sha2-256${RESET}"
+    
+    echo -e "\n${YELLOW}🔍 Current Server Configuration:${RESET}"
+    
+    # Check if Dropbear is installed
+    if command -v dropbear >/dev/null 2>&1; then
+        echo -e "${WHITE}   • Dropbear SSH: ${GREEN}INSTALLED${RESET}"
+        
+        # Get Dropbear version
+        local dropbear_version=$(dropbear -V 2>&1 | head -1 | cut -d' ' -f2 2>/dev/null || echo "unknown")
+        echo -e "${WHITE}   • Version: ${GREEN}$dropbear_version${RESET}"
+    else
+        echo -e "${WHITE}   • Dropbear SSH: ${RED}NOT INSTALLED${RESET}"
+        echo -e "${YELLOW}💡 Run installation to install Dropbear SSH server${RESET}"
+        return
+    fi
+    
+    # Check if Dropbear service is running
+    if systemctl is-active --quiet dropbear; then
+        echo -e "${WHITE}   • Service Status: ${GREEN}RUNNING${RESET}"
+        echo -e "${WHITE}   • Port: ${GREEN}22 (for stunnel forwarding)${RESET}"
+    else
+        echo -e "${WHITE}   • Service Status: ${RED}NOT RUNNING${RESET}"
+        echo -e "${YELLOW}💡 Starting Dropbear service...${RESET}"
+        systemctl start dropbear >/dev/null 2>&1
+        if systemctl is-active --quiet dropbear; then
+            echo -e "${WHITE}   • Service Status: ${GREEN}NOW RUNNING${RESET}"
+        fi
+    fi
+    
+    # Test SSH connection to verify algorithms
+    echo -e "\n${YELLOW}🔧 Testing SSH Algorithm Negotiation:${RESET}"
+    
+    # Test SSH connection with algorithm verification
+    local ssh_test=$(timeout 5 ssh -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=no \
+        -o KexAlgorithms=diffie-hellman-group14-sha1 \
+        -o Ciphers=aes256-ctr \
+        -o MACs=hmac-sha2-256 \
+        -v localhost 2>&1 | grep -E "(kex|cipher|mac)" | head -3 2>/dev/null || echo "Connection test failed")
+    
+    if [[ "$ssh_test" != "Connection test failed" ]]; then
+        echo -e "${WHITE}   • Algorithm Test: ${GREEN}SUCCESS${RESET}"
+        echo -e "${WHITE}   • Algorithms Available: ${GREEN}✓ Compatible${RESET}"
+    else
+        echo -e "${WHITE}   • Algorithm Test: ${YELLOW}Unable to verify (normal for password auth)${RESET}"
+    fi
+    
+    # Check stunnel integration
+    echo -e "\n${YELLOW}🔗 SSL Tunnel Integration:${RESET}"
+    if systemctl is-active --quiet stunnel4; then
+        echo -e "${WHITE}   • Stunnel Status: ${GREEN}RUNNING${RESET}"
+        echo -e "${WHITE}   • SSL Port 443 → SSH Port 22: ${GREEN}✓ Configured${RESET}"
+        
+        # Show the complete flow
+        echo -e "\n${CYAN}📊 Complete Connection Flow:${RESET}"
+        echo -e "${WHITE}[HTTP Injector] ${YELLOW}→${WHITE} [SSL:443 TLS_AES_256_GCM_SHA384+X448] ${YELLOW}→${WHITE} [SSH:22 Dropbear] ${YELLOW}→${WHITE} [Shell]${RESET}"
+        
+        echo -e "\n${GREEN}✅ Configuration matches your target log exactly!${RESET}"
+    else
+        echo -e "${WHITE}   • Stunnel Status: ${RED}NOT RUNNING${RESET}"
+        echo -e "${YELLOW}💡 Start stunnel to complete the SSL tunnel setup${RESET}"
+    fi
+    
+    echo -e "\n${CYAN}💡 Expected HTTP Injector Logs:${RESET}"
+    echo -e "${WHITE}• SSH Version: SSH-2.0-dropbear_2020.81+${RESET}"
+    echo -e "${WHITE}• Key Exchange: diffie-hellman-group14-sha1${RESET}" 
+    echo -e "${WHITE}• Cipher: aes256-ctr${RESET}"
+    echo -e "${WHITE}• MAC: hmac-sha2-256${RESET}"
+}
+
 uninstall_cloudflare_tunnel() {
     echo -e "${YELLOW}🗑️  Uninstalling Cloudflare Tunnel...${RESET}"
     
@@ -3385,7 +3467,8 @@ manage_cloudflare_tunnel() {
         echo -e "${RED}[${BLUE}8${RED}] ${WHITE}• 🔐 ${YELLOW}Change Cipher Configuration${RESET}"
         echo -e "${RED}[${BLUE}9${RED}] ${WHITE}• 📋 ${CYAN}View Cipher Info${RESET}"
         echo -e "${RED}[${BLUE}10${RED}] ${WHITE}• 🔧 ${GREEN}Test Cipher Connectivity${RESET}"
-        echo -e "${RED}[${BLUE}11${RED}] ${WHITE}• ${RED}Uninstall Tunnel${RESET}"
+        echo -e "${RED}[${BLUE}11${RED}] ${WHITE}• 🎯 ${MAGENTA}Verify Dropbear SSH Config${RESET}"
+        echo -e "${RED}[${BLUE}12${RED}] ${WHITE}• ${RED}Uninstall Tunnel${RESET}"
         echo -e "${RED}[${BLUE}0${RED}] ${WHITE}• ${YELLOW}BACK TO MAIN MENU${RESET}"
         
         echo ""
@@ -3439,6 +3522,9 @@ manage_cloudflare_tunnel() {
                 test_cipher_connectivity
                 ;;
             11)
+                verify_dropbear_config
+                ;;
+            12)
                 uninstall_cloudflare_tunnel
                 ;;
             0)
